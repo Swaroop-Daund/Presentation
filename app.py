@@ -48,17 +48,25 @@ if st.sidebar.button("Predict Attrition Risk"):
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(input_df)
 
+    # Handle binary classification (list) vs single output (scalar)
+    if isinstance(explainer.expected_value, list):
+        expected_val = explainer.expected_value[1]
+        shap_val = shap_values[1]
+    else:
+        expected_val = explainer.expected_value
+        shap_val = shap_values
+
     # Create SHAP force plot
     fig = shap.force_plot(
-        explainer.expected_value[1],
-        shap_values[1],
+        expected_val,
+        shap_val,
         input_df,
         matplotlib=True
     )
     st.pyplot(fig)
 
-    # Global SHAP summary (optional)
+    # Global SHAP summary
     st.subheader("📊 Global Feature Importance")
     fig_summary = plt.figure()
-    shap.summary_plot(shap_values[1], input_df, show=False)
+    shap.summary_plot(shap_val, input_df, show=False)
     st.pyplot(fig_summary)
