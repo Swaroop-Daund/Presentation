@@ -5,9 +5,9 @@ import joblib
 import shap
 
 # ---- Load model artifacts ----
-model = joblib.load("C:\Users\Swaroop\Documents\GitHub\Presentation\sample_dataattrition_model.pkl")
-encoders = joblib.load("C:\Users\Swaroop\Documents\GitHub\Presentation\sample_datalabel_encoders.pkl")
-feature_list = joblib.load("C:\Users\Swaroop\Documents\GitHub\Presentation\sample_datafeature_list.pkl")
+model = joblib.load("sample_dataattrition_model.pkl")
+encoders = joblib.load("sample_datalabel_encoders.pkl")
+feature_list = joblib.load("sample_datafeature_list.pkl")
 
 st.set_page_config(layout="wide")
 st.title("🔍 Employee Attrition Prediction & Explanation")
