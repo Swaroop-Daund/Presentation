@@ -1,27 +1,28 @@
-# app.py — Streamlit Web App for Employee Attrition Prediction
 import streamlit as st
 import pandas as pd
 import joblib
 import shap
+import matplotlib.pyplot as plt
 
 # ---- Load model artifacts ----
-model = joblib.load("sample_dataattrition_model.pkl")
-encoders = joblib.load("sample_datalabel_encoders.pkl")
-feature_list = joblib.load("sample_datafeature_list.pkl")
+model = joblib.load("attrition_model.pkl")
+encoders = joblib.load("label_encoders.pkl")
+feature_list = joblib.load("feature_list.pkl")
 
+# ---- Streamlit UI Setup ----
 st.set_page_config(layout="wide")
 st.title("🔍 Employee Attrition Prediction & Explanation")
 
 st.sidebar.header("Enter Employee Details")
 
-# ---- Input collection ----
+# ---- Collect user input ----
 def collect_user_input():
     data = {}
     for feat in feature_list:
-        if feat in encoders:  # categorical input
+        if feat in encoders:  # categorical features
             options = encoders[feat].classes_
             data[feat] = st.sidebar.selectbox(f"{feat}", options)
-        else:  # numeric input
+        else:  # numeric features
             data[feat] = st.sidebar.number_input(f"{feat}", value=0.0)
     return pd.DataFrame([data])
 
@@ -43,16 +44,21 @@ if st.sidebar.button("Predict Attrition Risk"):
         st.success(f"✅ Low Attrition Risk — {1-proba:.2%} probability")
 
     # ---- SHAP Explanation ----
+    st.subheader("🔎 Feature Contribution (SHAP)")
     explainer = shap.TreeExplainer(model)
     shap_values = explainer.shap_values(input_df)
 
-    st.subheader("🔎 Feature Contribution (SHAP)")
-    st.set_option("deprecation.showPyplotGlobalUse", False)
-    st.pyplot(
-        shap.force_plot(
-            explainer.expected_value[1],
-            shap_values[1],
-            input_df,
-            matplotlib=True
-        )
+    # Create SHAP force plot
+    fig = shap.force_plot(
+        explainer.expected_value[1],
+        shap_values[1],
+        input_df,
+        matplotlib=True
     )
+    st.pyplot(fig)
+
+    # Global SHAP summary (optional)
+    st.subheader("📊 Global Feature Importance")
+    fig_summary = plt.figure()
+    shap.summary_plot(shap_values[1], input_df, show=False)
+    st.pyplot(fig_summary)
